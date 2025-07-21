@@ -11,28 +11,11 @@
 namespace esphome {
 namespace acs37800 {
 
-struct SequenceStepEnables {
-  bool tcc, msrc, dss, pre_range, final_range;
-};
-
-struct SequenceStepTimeouts {
-  uint16_t pre_range_vcsel_period_pclks, final_range_vcsel_period_pclks;
-
-  uint16_t msrc_dss_tcc_mclks, pre_range_mclks, final_range_mclks;
-  uint32_t msrc_dss_tcc_us, pre_range_us, final_range_us;
-};
-
-enum VcselPeriodType { VCSEL_PERIOD_PRE_RANGE, VCSEL_PERIOD_FINAL_RANGE };
-
-class ACS37800Sensor : public sensor::Sensor, public PollingComponent, public i2c::I2CDevice {
+class ACS37800Sensor : public PollingComponent, public i2c::I2CDevice {
  public:
-  ACS37800Sensor();
-
   void setup() override;
-
   void dump_config() override;
   void update() override;
-
   void loop() override;
 
   void set_voltage_sensor(sensor::Sensor *voltage_sensor) { voltage_sensor_ = voltage_sensor; }
@@ -56,10 +39,8 @@ class ACS37800Sensor : public sensor::Sensor, public PollingComponent, public i2
   // The ACS37800's coarse current gain - needed by the current calculations
   float _currentCoarseGain;
 
-  uint32_t _numberOfSamples = 1023
-
-                              sensor::Sensor *
-                              voltage_sensor_{nullptr};
+  uint32_t _numberOfSamples = 1023;
+  sensor::Sensor *voltage_sensor_{nullptr};
   sensor::Sensor *current_sensor_{nullptr};
   sensor::Sensor *power_sensor_{nullptr};
 
