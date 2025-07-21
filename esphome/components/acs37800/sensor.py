@@ -3,6 +3,7 @@ from esphome.components import i2c, sensor
 import esphome.config_validation as cv
 from esphome.const import (
     CONF_CURRENT,
+    CONF_ID,
     CONF_POWER,
     CONF_SHUNT_RESISTANCE,
     CONF_VOLTAGE,
@@ -15,14 +16,14 @@ from esphome.const import (
     UNIT_WATT,
 )
 
+DEPENDENCIES = ["i2c"]
+
 CONF_DIVIDER_RESISTANCE = "divider_resistance"
 CONF_SAMPLE_NUMBER = "number_of_saples"
 
-DEPENDENCIES = ["i2c"]
-
 acs37800_ns = cg.esphome_ns.namespace("acs37800")
 ACS37800Sensor = acs37800_ns.class_(
-    "ACS37800Sensor", sensor.Sensor, cg.PollingComponent, i2c.I2CDevice
+    "ACS37800Sensor", cg.PollingComponent, i2c.I2CDevice
 )
 
 CONFIG_SCHEMA = (
@@ -47,10 +48,10 @@ CONFIG_SCHEMA = (
                 device_class=DEVICE_CLASS_POWER,
                 state_class=STATE_CLASS_MEASUREMENT,
             ),
-            cv.Optional(CONF_SHUNT_RESISTANCE, default=0.1): cv.All(
+            cv.Optional(CONF_SHUNT_RESISTANCE, default=82000.0): cv.All(
                 cv.resistance, cv.Range(min=0.0)
             ),
-            cv.Optional(CONF_DIVIDER_RESISTANCE, default=0.1): cv.All(
+            cv.Optional(CONF_DIVIDER_RESISTANCE, default=2000000.0): cv.All(
                 cv.resistance, cv.Range(min=0.0)
             ),
             cv.Optional(CONF_SAMPLE_NUMBER, default=1023): cv.int_range(
@@ -64,7 +65,7 @@ CONFIG_SCHEMA = (
 
 
 async def to_code(config):
-    var = await sensor.new_sensor(config)
+    var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
     await i2c.register_i2c_device(var, config)
 

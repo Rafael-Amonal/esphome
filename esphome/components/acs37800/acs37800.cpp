@@ -20,12 +20,6 @@ namespace acs37800 {
 
 static const char *const TAG = "acs37800";
 
-std::list<ACS37800Sensor *>
-    ACS37800Sensor::acs37800_sensors;                    // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-bool ACS37800Sensor::enable_pin_setup_complete = false;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-
-ACS37800Sensor::ACS37800Sensor() { ACS37800Sensor::acs37800_sensors.push_back(this); }
-
 void ACS37800Sensor::dump_config() {
   LOG_SENSOR("", "ACS37800", this);
   LOG_UPDATE_INTERVAL(this);
