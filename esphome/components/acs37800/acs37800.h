@@ -1,78 +1,77 @@
 #pragma once
 
-#include <list>
-
 #include "esphome/core/component.h"
-#include "esphome/core/hal.h"
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/components/i2c/i2c.h"
-#include "acs37800_defines.h"
 
 namespace esphome {
 namespace acs37800 {
 
-class ACS37800Sensor : public PollingComponent, public i2c::I2CDevice {
+enum AdcTime : uint16_t {
+  ADC_TIME_140US = 0,
+  ADC_TIME_204US = 1,
+  ADC_TIME_332US = 2,
+  ADC_TIME_588US = 3,
+  ADC_TIME_1100US = 4,
+  ADC_TIME_2116US = 5,
+  ADC_TIME_4156US = 6,
+  ADC_TIME_8244US = 7
+};
+
+enum AdcAvgSamples : uint16_t {
+  ADC_AVG_SAMPLES_1 = 0,
+  ADC_AVG_SAMPLES_4 = 1,
+  ADC_AVG_SAMPLES_16 = 2,
+  ADC_AVG_SAMPLES_64 = 3,
+  ADC_AVG_SAMPLES_128 = 4,
+  ADC_AVG_SAMPLES_256 = 5,
+  ADC_AVG_SAMPLES_512 = 6,
+  ADC_AVG_SAMPLES_1024 = 7
+};
+
+union ConfigurationRegister {
+  uint16_t raw;
+  struct {
+    uint16_t mode : 3;
+    AdcTime shunt_voltage_conversion_time : 3;
+    AdcTime bus_voltage_conversion_time : 3;
+    AdcAvgSamples avg_samples : 3;
+    uint16_t reserved : 3;
+    uint16_t reset : 1;
+  } __attribute__((packed));
+};
+
+class ACS37800Component : public PollingComponent, public i2c::I2CDevice {
  public:
   void setup() override;
   void dump_config() override;
+  float get_setup_priority() const override;
   void update() override;
-  void loop() override;
 
-  void set_voltage_sensor(sensor::Sensor *voltage_sensor) { voltage_sensor_ = voltage_sensor; }
+  void set_shunt_resistance_ohm(float shunt_resistance_ohm) { shunt_resistance_ohm_ = shunt_resistance_ohm; }
+  void set_max_current_a(float max_current_a) { max_current_a_ = max_current_a; }
+  void set_adc_time_voltage(AdcTime time) { adc_time_voltage_ = time; }
+  void set_adc_time_current(AdcTime time) { adc_time_current_ = time; }
+  void set_adc_avg_samples(AdcAvgSamples samples) { adc_avg_samples_ = samples; }
+
+  void set_bus_voltage_sensor(sensor::Sensor *bus_voltage_sensor) { bus_voltage_sensor_ = bus_voltage_sensor; }
+  void set_shunt_voltage_sensor(sensor::Sensor *shunt_voltage_sensor) { shunt_voltage_sensor_ = shunt_voltage_sensor; }
   void set_current_sensor(sensor::Sensor *current_sensor) { current_sensor_ = current_sensor; }
   void set_power_sensor(sensor::Sensor *power_sensor) { power_sensor_ = power_sensor; }
-  // Change the parameters
-  void setSenseRes(float newRes) { _senseResistance = newRes; }      // Change the value of _senseResistance (Ohms)
-  void setDividerRes(float newRes) { _dividerResistance = newRes; }  // Change the value of _dividerResistance (Ohms)
-  void setNumberOfSamples(uint32_t numberOfSamples) { _numberOfSamples = numberOfSamples; }
 
  protected:
-  // The value of the sense resistor for voltage measurement in Ohms
-  float _senseResistance = ACS37800_DEFAULT_SENSE_RES;
-
-  // The value of the divider resistance for voltage measurement in Ohms
-  float _dividerResistance = ACS37800_DEFAULT_DIVIDER_RES;
-
-  // The ACS37800's current sensing range
-  float _currentSensingRange = ACS37800_DEFAULT_CURRENT_RANGE;
-
-  // The ACS37800's coarse current gain - needed by the current calculations
-  float _currentCoarseGain;
-
-  uint32_t _numberOfSamples = 1023;
-  sensor::Sensor *voltage_sensor_{nullptr};
+  float shunt_resistance_ohm_;
+  float max_current_a_;
+  AdcTime adc_time_voltage_{AdcTime::ADC_TIME_1100US};
+  AdcTime adc_time_current_{AdcTime::ADC_TIME_1100US};
+  AdcAvgSamples adc_avg_samples_{AdcAvgSamples::ADC_AVG_SAMPLES_4};
+  uint32_t calibration_lsb_;
+  sensor::Sensor *bus_voltage_sensor_{nullptr};
+  sensor::Sensor *shunt_voltage_sensor_{nullptr};
   sensor::Sensor *current_sensor_{nullptr};
   sensor::Sensor *power_sensor_{nullptr};
 
-  // Configurable Settings
-  // By default, settings are written to the shadow registers only. Set _eeprom to true to write to EEPROM too.
-  // Set/Get the number of samples for RMS calculations. Bypass_N_Enable must be set/true for this to have effect.
-  ACS37800ERR _setNumberOfSamples(uint32_t numberOfSamples, bool _eeprom = false);
-  ACS37800ERR _getNumberOfSamples(
-      uint32_t *numberOfSamples);  // Read and return the number of samples (from _shadow_ memory)
-  // Set/Clear the Bypass_N_Enable flag
-  ACS37800ERR _setBypassNenable(bool bypass, bool _eeprom = false);
-  ACS37800ERR _getBypassNenable(bool *bypass);  // Read and return the bypass_n_en flag (from _shadow_ memory)
-
-  // Basic methods for accessing the volatile registers
-  ACS37800ERR _readRMS(float *vRMS, float *iRMS);  // Read volatile register 0x20. Return the vRMS and iRMS.
-  ACS37800ERR _readPowerActiveReactive(
-      float *pActive, float *pReactive);  // Read volatile register 0x21. Return the pactive and pimag (reactive)
-  ACS37800ERR _readPowerFactor(float *pApparent, float *pFactor, bool *posangle,
-                               bool *pospf);  // Read volatile register 0x22. Return the apparent power, power factor,
-                                              // leading / lagging, generated / consumed
-  ACS37800ERR _readInstantaneous(
-      float *vInst, float *iInst,
-      float *pInst);  // Read volatile registers 0x2A and 0x2C. Return the vInst, iInst and pInst.
-  ACS37800ERR _readErrorFlags(
-      ACS37800_REGISTER_2D_t *errorFlags);  // Read volatile register 0x2D. Return its contents in errorFlags.
-
-  // Basic methods for accessing registers
-  ACS37800ERR readRegister(uint32_t *data, uint8_t address);
-  ACS37800ERR writeRegister(uint32_t data, uint8_t address);
-
-  bool write_byte_32(uint8_t a_register, uint32_t data) { return write_bytes_16(a_register, (uint16_t *) &data, 2); }
-  bool read_byte_32(uint8_t a_register, uint16_t *data) { return read_bytes_16(a_register, data, 2); }
+  int32_t twos_complement_(int32_t val, uint8_t bits);
 };
 
 }  // namespace acs37800
