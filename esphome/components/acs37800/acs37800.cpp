@@ -37,133 +37,126 @@ static const uint16_t ACS37800_ADC_TIMES[] = {140, 204, 332, 588, 1100, 2116, 41
 static const uint16_t ACS37800_ADC_AVG_SAMPLES[] = {1, 4, 16, 64, 128, 256, 512, 1024};
 
 void ACS37800Component::setup() {
-  ESP_LOGCONFIG(TAG, "Running setup");
+  // ESP_LOGCONFIG(TAG, "Running setup");
 
-  ConfigurationRegister config;
+  // ConfigurationRegister config;
 
-  config.reset = 1;
-  if (!this->write_byte_16(ACS37800_REGISTER_CONFIG, config.raw)) {
-    this->mark_failed();
-    return;
-  }
-  delay(1);
+  // config.reset = 1;
+  // if (!this->write_byte_16(ACS37800_REGISTER_CONFIG, config.raw)) {
+  //   this->mark_failed();
+  //   return;
+  // }
+  // delay(1);
 
-  config.raw = 0;
-  config.reserved = 0b100;  // as per datasheet
+  // config.raw = 0;
+  // config.reserved = 0b100;  // as per datasheet
 
-  // Averaging Mode AVG Bit Settings[11:9] (000 -> 1 sample, 001 -> 4 sample, 111 -> 1024 samples)
-  config.avg_samples = this->adc_avg_samples_;
+  // // Averaging Mode AVG Bit Settings[11:9] (000 -> 1 sample, 001 -> 4 sample, 111 -> 1024 samples)
+  // config.avg_samples = this->adc_avg_samples_;
 
-  // Bus Voltage Conversion Time VBUSCT Bit Settings [8:6] (100 -> 1.1ms, 111 -> 8.244 ms)
-  config.bus_voltage_conversion_time = this->adc_time_voltage_;
+  // // Bus Voltage Conversion Time VBUSCT Bit Settings [8:6] (100 -> 1.1ms, 111 -> 8.244 ms)
+  // config.bus_voltage_conversion_time = this->adc_time_voltage_;
 
-  // Shunt Voltage Conversion Time VSHCT Bit Settings [5:3] (100 -> 1.1ms, 111 -> 8.244 ms)
-  config.shunt_voltage_conversion_time = this->adc_time_current_;
+  // // Shunt Voltage Conversion Time VSHCT Bit Settings [5:3] (100 -> 1.1ms, 111 -> 8.244 ms)
+  // config.shunt_voltage_conversion_time = this->adc_time_current_;
 
-  // Mode Settings [2:0] Combinations (111 -> Shunt and Bus, Continuous)
-  config.mode = 0b111;
+  // // Mode Settings [2:0] Combinations (111 -> Shunt and Bus, Continuous)
+  // config.mode = 0b111;
 
-  if (!this->write_byte_16(ACS37800_REGISTER_CONFIG, config.raw)) {
-    this->mark_failed();
-    return;
-  }
+  // if (!this->write_byte_16(ACS37800_REGISTER_CONFIG, config.raw)) {
+  //   this->mark_failed();
+  //   return;
+  // }
 
-  // lsb is multiplied by 1000000 to store it as an integer value
-  uint32_t lsb = static_cast<uint32_t>(ceilf(this->max_current_a_ * 1000000.0f / 32768));
+  // // lsb is multiplied by 1000000 to store it as an integer value
+  // uint32_t lsb = static_cast<uint32_t>(ceilf(this->max_current_a_ * 1000000.0f / 32768));
 
-  this->calibration_lsb_ = lsb;
+  // this->calibration_lsb_ = lsb;
 
-  auto calibration = uint32_t(0.00512 / (lsb * this->shunt_resistance_ohm_ / 1000000.0f));
+  // auto calibration = uint32_t(0.00512 / (lsb * this->shunt_resistance_ohm_ / 1000000.0f));
 
-  ESP_LOGV(TAG, "    Using LSB=%" PRIu32 " calibration=%" PRIu32, lsb, calibration);
+  // ESP_LOGV(TAG, "    Using LSB=%" PRIu32 " calibration=%" PRIu32, lsb, calibration);
 
-  if (!this->write_byte_16(ACS37800_REGISTER_CALIBRATION, calibration)) {
-    this->mark_failed();
-    return;
-  }
+  // if (!this->write_byte_16(ACS37800_REGISTER_CALIBRATION, calibration)) {
+  //   this->mark_failed();
+  //   return;
+  // }
 }
 
 void ACS37800Component::dump_config() {
-  ESP_LOGCONFIG(TAG, "ACS37800:");
-  LOG_I2C_DEVICE(this);
+  // ESP_LOGCONFIG(TAG, "ACS37800:");
+  // LOG_I2C_DEVICE(this);
 
-  if (this->is_failed()) {
-    ESP_LOGE(TAG, ESP_LOG_MSG_COMM_FAIL);
-    return;
-  }
-  LOG_UPDATE_INTERVAL(this);
+  // if (this->is_failed()) {
+  //   ESP_LOGE(TAG, ESP_LOG_MSG_COMM_FAIL);
+  //   return;
+  // }
+  // LOG_UPDATE_INTERVAL(this);
 
-  ESP_LOGCONFIG(TAG,
-                "  ADC Conversion Time Bus Voltage: %d\n"
-                "  ADC Conversion Time Shunt Voltage: %d\n"
-                "  ADC Averaging Samples: %d",
-                ACS37800_ADC_TIMES[this->adc_time_voltage_ & 0b111],
-                ACS37800_ADC_TIMES[this->adc_time_current_ & 0b111],
-                ACS37800_ADC_AVG_SAMPLES[this->adc_avg_samples_ & 0b111]);
+  // ESP_LOGCONFIG(TAG,
+  //               "  ADC Conversion Time Bus Voltage: %d\n"
+  //               "  ADC Conversion Time Shunt Voltage: %d\n"
+  //               "  ADC Averaging Samples: %d",
+  //               ACS37800_ADC_TIMES[this->adc_time_voltage_ & 0b111],
+  //               ACS37800_ADC_TIMES[this->adc_time_current_ & 0b111],
+  //               ACS37800_ADC_AVG_SAMPLES[this->adc_avg_samples_ & 0b111]);
 
-  LOG_SENSOR("  ", "Bus Voltage", this->bus_voltage_sensor_);
-  LOG_SENSOR("  ", "Shunt Voltage", this->shunt_voltage_sensor_);
-  LOG_SENSOR("  ", "Current", this->current_sensor_);
-  LOG_SENSOR("  ", "Power", this->power_sensor_);
+  // LOG_SENSOR("  ", "Bus Voltage", this->bus_voltage_sensor_);
+  // LOG_SENSOR("  ", "Shunt Voltage", this->shunt_voltage_sensor_);
+  // LOG_SENSOR("  ", "Current", this->current_sensor_);
+  // LOG_SENSOR("  ", "Power", this->power_sensor_);
 }
 
 float ACS37800Component::get_setup_priority() const { return setup_priority::DATA; }
 
 void ACS37800Component::update() {
-  if (this->bus_voltage_sensor_ != nullptr) {
-    uint16_t raw_bus_voltage;
-    if (!this->read_byte_16(ACS37800_REGISTER_BUS_VOLTAGE, &raw_bus_voltage)) {
-      this->status_set_warning();
-      return;
-    }
-    // Convert for 2's compliment and signed value (though always positive)
-    float bus_voltage_v = this->twos_complement_(raw_bus_voltage, 16);
-    bus_voltage_v *= 0.00125f;
-    this->bus_voltage_sensor_->publish_state(bus_voltage_v);
-  }
+  // if (this->bus_voltage_sensor_ != nullptr) {
+  //   uint16_t raw_bus_voltage;
+  //   if (!this->read_byte_16(ACS37800_REGISTER_BUS_VOLTAGE, &raw_bus_voltage)) {
+  //     this->status_set_warning();
+  //     return;
+  //   }
+  //   // Convert for 2's compliment and signed value (though always positive)
+  //   float bus_voltage_v = this->twos_complement_(raw_bus_voltage, 16);
+  //   bus_voltage_v *= 0.00125f;
+  //   this->bus_voltage_sensor_->publish_state(bus_voltage_v);
+  // }
 
-  if (this->shunt_voltage_sensor_ != nullptr) {
-    uint16_t raw_shunt_voltage;
-    if (!this->read_byte_16(ACS37800_REGISTER_SHUNT_VOLTAGE, &raw_shunt_voltage)) {
-      this->status_set_warning();
-      return;
-    }
-    // Convert for 2's compliment and signed value
-    float shunt_voltage_v = this->twos_complement_(raw_shunt_voltage, 16);
-    shunt_voltage_v *= 0.0000025f;
-    this->shunt_voltage_sensor_->publish_state(shunt_voltage_v);
-  }
+  // if (this->shunt_voltage_sensor_ != nullptr) {
+  //   uint16_t raw_shunt_voltage;
+  //   if (!this->read_byte_16(ACS37800_REGISTER_SHUNT_VOLTAGE, &raw_shunt_voltage)) {
+  //     this->status_set_warning();
+  //     return;
+  //   }
+  //   // Convert for 2's compliment and signed value
+  //   float shunt_voltage_v = this->twos_complement_(raw_shunt_voltage, 16);
+  //   shunt_voltage_v *= 0.0000025f;
+  //   this->shunt_voltage_sensor_->publish_state(shunt_voltage_v);
+  // }
 
-  if (this->current_sensor_ != nullptr) {
-    uint16_t raw_current;
-    if (!this->read_byte_16(ACS37800_REGISTER_CURRENT, &raw_current)) {
-      this->status_set_warning();
-      return;
-    }
-    // Convert for 2's compliment and signed value
-    float current_ma = this->twos_complement_(raw_current, 16);
-    current_ma *= (this->calibration_lsb_ / 1000.0f);
-    this->current_sensor_->publish_state(current_ma / 1000.0f);
-  }
+  // if (this->current_sensor_ != nullptr) {
+  //   uint16_t raw_current;
+  //   if (!this->read_byte_16(ACS37800_REGISTER_CURRENT, &raw_current)) {
+  //     this->status_set_warning();
+  //     return;
+  //   }
+  //   // Convert for 2's compliment and signed value
+  //   float current_ma = this->twos_complement_(raw_current, 16);
+  //   current_ma *= (this->calibration_lsb_ / 1000.0f);
+  //   this->current_sensor_->publish_state(current_ma / 1000.0f);
+  // }
 
-  if (this->power_sensor_ != nullptr) {
-    uint16_t raw_power;
-    if (!this->read_byte_16(ACS37800_REGISTER_POWER, &raw_power)) {
-      this->status_set_warning();
-      return;
-    }
-    float power_mw = int16_t(raw_power) * (this->calibration_lsb_ * 25.0f / 1000.0f);
-    this->power_sensor_->publish_state(power_mw / 1000.0f);
-  }
+  // if (this->power_sensor_ != nullptr) {
+  //   uint16_t raw_power;
+  //   if (!this->read_byte_16(ACS37800_REGISTER_POWER, &raw_power)) {
+  //     this->status_set_warning();
+  //     return;
+  //   }
+  //   float power_mw = int16_t(raw_power) * (this->calibration_lsb_ * 25.0f / 1000.0f);
+  //   this->power_sensor_->publish_state(power_mw / 1000.0f);
+  // }
 
-  this->status_clear_warning();
-}
-
-int32_t ACS37800Component::twos_complement_(int32_t val, uint8_t bits) {
-  if (val & ((uint32_t) 1 << (bits - 1))) {
-    val -= (uint32_t) 1 << bits;
-  }
-  return val;
+  // this->status_clear_warning();
 }
 
 }  // namespace acs37800
