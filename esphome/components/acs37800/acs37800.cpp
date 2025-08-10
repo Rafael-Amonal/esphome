@@ -63,7 +63,7 @@ void ACS37800Component::update() {
 
 // Read a register's contents. Contents are returned in data.
 ACS37800ERR ACS37800Component::readRegister(uint32_t *data, uint8_t address) {
-  if (!this->read_bytes_16(address, data, 2)) {
+  if (!this->read_bytes_16(address, (uint16_t *) data, 2)) {
     this->status_set_warning();
     return (ACS37800_ERR_I2C_ERROR);
   }
@@ -239,7 +239,7 @@ ACS37800ERR ACS37800Component::readRMS(float *vRMS, float *iRMS) {
   volts /= 1000;     // Convert to Volts
   // Correct for the voltage divider: (RISO1 + RISO2 + RSENSE) / RSENSE
   // Or:  (RISO1 + RISO2 + RISO3 + RISO4 + RSENSE) / RSENSE
-  float resistorMultiplier = (_dividerResistance + _senseResistance) / _senseResistance;
+  float resistorMultiplier = (divider_resistance_ohm_ + shunt_resistance_ohm_) / shunt_resistance_ohm_;
   volts *= resistorMultiplier;
   *vRMS = volts;
 
@@ -252,8 +252,8 @@ ACS37800ERR ACS37800Component::readRMS(float *vRMS, float *iRMS) {
 
   signedUnsigned.unSigned = store.data.bits.irms;  // Extract irms as signed int
   float amps = (float) signedUnsigned.Signed;
-  amps /= 55000.0;               // Convert from codes to the fraction of ADC Full Scale (16-bit)
-  amps *= _currentSensingRange;  // Convert to Amps
+  amps /= 55000.0;                 // Convert from codes to the fraction of ADC Full Scale (16-bit)
+  amps *= current_sensing_range_;  // Convert to Amps
   *iRMS = amps;
   return (error);
 }
@@ -282,12 +282,12 @@ ACS37800ERR ACS37800Component::readPowerActiveReactive(float *pActive, float *pR
   } signedUnsigned;  // Avoid any ambiguity when casting to signed int
   signedUnsigned.unSigned = store.data.bits.pactive;
   float power = (float) signedUnsigned.Signed;
-  float LSBpermW = 3.08;                    // LSB per mW
-  LSBpermW *= 30.0 / _currentSensingRange;  // Correct for sensor version
-  power /= LSBpermW;                        // Convert from codes to mW
+  float LSBpermW = 3.08;                      // LSB per mW
+  LSBpermW *= 30.0 / current_sensing_range_;  // Correct for sensor version
+  power /= LSBpermW;                          // Convert from codes to mW
   // Correct for the voltage divider: (RISO1 + RISO2 + RSENSE) / RSENSE
   // Or:  (RISO1 + RISO2 + RISO3 + RISO4 + RSENSE) / RSENSE
-  float resistorMultiplier = (_dividerResistance + _senseResistance) / _senseResistance;
+  float resistorMultiplier = (divider_resistance_ohm_ + shunt_resistance_ohm_) / shunt_resistance_ohm_;
   power *= resistorMultiplier;
   power /= 1000;  // Convert from mW to W
   *pActive = power;
@@ -302,9 +302,9 @@ ACS37800ERR ACS37800Component::readPowerActiveReactive(float *pActive, float *pR
   // Datasheet also says:
   //  "6.15 LSB/mVAR for the 30A version and 2.05 LSB/mVAR for the 90A version"
   power = (float) store.data.bits.pimag;
-  float LSBpermVAR = 6.15;                    // LSB per mVAR
-  LSBpermVAR *= 30.0 / _currentSensingRange;  // Correct for sensor version
-  power /= LSBpermVAR;                        // Convert from codes to mVAR
+  float LSBpermVAR = 6.15;                      // LSB per mVAR
+  LSBpermVAR *= 30.0 / current_sensing_range_;  // Correct for sensor version
+  power /= LSBpermVAR;                          // Convert from codes to mVAR
   // Correct for the voltage divider: (RISO1 + RISO2 + RSENSE) / RSENSE
   // Or:  (RISO1 + RISO2 + RISO3 + RISO4 + RSENSE) / RSENSE
   power *= resistorMultiplier;
@@ -330,12 +330,12 @@ ACS37800ERR ACS37800Component::readPowerFactor(float *pApparent, float *pFactor,
   // Datasheet also says:
   //  "6.15 LSB/mVA for the 30A version and 2.05 LSB/mVA for the 90A version"
   float power = (float) store.data.bits.papparent;
-  float LSBpermVA = 6.15;                    // LSB per mVA
-  LSBpermVA *= 30.0 / _currentSensingRange;  // Correct for sensor version
-  power /= LSBpermVA;                        // Convert from codes to mVA
+  float LSBpermVA = 6.15;                      // LSB per mVA
+  LSBpermVA *= 30.0 / current_sensing_range_;  // Correct for sensor version
+  power /= LSBpermVA;                          // Convert from codes to mVA
   // Correct for the voltage divider: (RISO1 + RISO2 + RSENSE) / RSENSE
   // Or:  (RISO1 + RISO2 + RISO3 + RISO4 + RSENSE) / RSENSE
-  float resistorMultiplier = (_dividerResistance + _senseResistance) / _senseResistance;
+  float resistorMultiplier = (divider_resistance_ohm_ + shunt_resistance_ohm_) / shunt_resistance_ohm_;
   power *= resistorMultiplier;
   power /= 1000;  // Convert from mVAR to VAR
   *pApparent = power;
@@ -380,15 +380,15 @@ ACS37800ERR ACS37800Component::readInstantaneous(float *vInst, float *iInst, flo
   volts /= 1000;     // Convert to Volts
   // Correct for the voltage divider: (RISO1 + RISO2 + RSENSE) / RSENSE
   // Or:  (RISO1 + RISO2 + RISO3 + RISO4 + RSENSE) / RSENSE
-  float resistorMultiplier = (_dividerResistance + _senseResistance) / _senseResistance;
+  float resistorMultiplier = (divider_resistance_ohm_ + shunt_resistance_ohm_) / shunt_resistance_ohm_;
   volts *= resistorMultiplier;
   *vInst = volts;
 
   // Extract the icodes. Convert to current in Amps.
   signedUnsigned.unSigned = store.data.bits.icodes;  // Extract icodes as signed int
   float amps = (float) signedUnsigned.Signed;
-  amps /= 27500.0;               // Convert from codes to the fraction of ADC Full Scale
-  amps *= _currentSensingRange;  // Convert to Amps
+  amps /= 27500.0;                 // Convert from codes to the fraction of ADC Full Scale
+  amps *= current_sensing_range_;  // Convert to Amps
   *iInst = amps;
 
   ACS37800_REGISTER_2C_t pstore;
@@ -401,9 +401,9 @@ ACS37800ERR ACS37800Component::readInstantaneous(float *vInst, float *iInst, flo
   signedUnsigned.unSigned = pstore.data.bits.pinstant;
   float power = (float) signedUnsigned.Signed;
   // Datasheet says: 3.08 LSB/mW for the 30A version and 1.03 LSB/mW for the 90A version
-  float LSBpermW = 3.08;                    // LSB per mW
-  LSBpermW *= 30.0 / _currentSensingRange;  // Correct for sensor version
-  power /= LSBpermW;                        // Convert from codes to mW
+  float LSBpermW = 3.08;                      // LSB per mW
+  LSBpermW *= 30.0 / current_sensing_range_;  // Correct for sensor version
+  power /= LSBpermW;                          // Convert from codes to mW
   // Correct for the voltage divider: (RISO1 + RISO2 + RSENSE) / RSENSE
   // Or:  (RISO1 + RISO2 + RISO3 + RISO4 + RSENSE) / RSENSE
   power *= resistorMultiplier;

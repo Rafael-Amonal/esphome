@@ -50,6 +50,8 @@ class ACS37800Component : public PollingComponent, public i2c::I2CDevice {
   // Set/Clear the Bypass_N_Enable flag
   ACS37800ERR setBypassNenable(bool bypass, bool _eeprom = false);
   ACS37800ERR getBypassNenable(bool *bypass);  // Read and return the bypass_n_en flag (from _shadow_ memory)
+  // Read and return the gain (from _shadow_ memory)
+  ACS37800ERR getCurrentCoarseGain(float *currentCoarseGain);
 
   // Basic methods for accessing the volatile registers
   ACS37800ERR readRMS(float *vRMS, float *iRMS);  // Read volatile register 0x20. Return the vRMS and iRMS.
