@@ -16,7 +16,7 @@ class ACS37800Component : public PollingComponent, public i2c::I2CDevice {
   void dump_config() override;
   float get_setup_priority() const override;
   void update() override;
-  void loop() override;
+  // void loop() override;
 
   void set_shunt_resistance_ohm(float shunt_resistance_ohm) { shunt_resistance_ohm_ = shunt_resistance_ohm; }
   void set_divider_resistance_ohm(float divider_resistance_ohm) { divider_resistance_ohm_ = divider_resistance_ohm; }
