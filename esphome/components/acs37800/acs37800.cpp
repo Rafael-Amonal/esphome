@@ -40,6 +40,11 @@ void ACS37800Component::dump_config() {
                 "  Divider resistance for voltage measurement in Ohms: %d\n"
                 "  Number of samples for RMS calculations: %d",
                 shunt_resistance_ohm_, divider_resistance_ohm_, number_of_samples_);
+  LOG_SENSOR(TAG,
+                "  Sense resistor for voltage measurement in Ohms: %d\n"
+                "  Divider resistance for voltage measurement in Ohms: %d\n"
+                "  Number of samples for RMS calculations: %d",
+                shunt_resistance_ohm_, divider_resistance_ohm_, number_of_samples_);
 
   LOG_SENSOR("  ", "Voltage", this->voltage_sensor_);
   LOG_SENSOR("  ", "Current", this->current_sensor_);
