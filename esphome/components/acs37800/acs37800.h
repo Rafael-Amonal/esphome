@@ -18,9 +18,9 @@ class ACS37800Component : public PollingComponent, public i2c::I2CDevice {
   void update() override;
   // void loop() override;
 
-  void set_shunt_resistance_ohm(float shunt_resistance_ohm) { shunt_resistance_ohm_ = shunt_resistance_ohm; }
-  void set_divider_resistance_ohm(float divider_resistance_ohm) { divider_resistance_ohm_ = divider_resistance_ohm; }
-  void set_number_of_samples(uint32_t samples) { number_of_samples_ = samples; }
+  void set_shunt_resistance_ohm(float shunt_resistance_ohm) { shunt_resistance_ohm_ = 82000.0; } // shunt_resistance_ohm; }
+  void set_divider_resistance_ohm(float divider_resistance_ohm) { divider_resistance_ohm_ = 2000000.0; } // divider_resistance_ohm; }
+  void set_number_of_samples(uint32_t samples) { number_of_samples_ = 1023; } //samples; }
 
   void set_voltage_sensor(sensor::Sensor *voltage_sensor) { voltage_sensor_ = voltage_sensor; }
   void set_current_sensor(sensor::Sensor *current_sensor) { current_sensor_ = current_sensor; }
@@ -28,13 +28,13 @@ class ACS37800Component : public PollingComponent, public i2c::I2CDevice {
 
  protected:
   // The value of the sense resistor for voltage measurement in Ohms
-  float shunt_resistance_ohm_;
+  float shunt_resistance_ohm_ = 82000.0;
   // The value of the divider resistance for voltage measurement in Ohms
-  float divider_resistance_ohm_;
+  float divider_resistance_ohm_ = 2000000.0;
   // The ACS37800's current sensing range
   float current_sensing_range_ = 30.0f;  // Default to 30.0A, can be overridden by set_max_current_a()
   // Set the number of samples for RMS calculations
-  uint32_t number_of_samples_;
+  uint32_t number_of_samples_ = 1023;
   // The ACS37800's coarse current gain - needed by the current calculations
   float current_coarse_gain_;
   sensor::Sensor *voltage_sensor_{nullptr};
