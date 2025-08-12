@@ -15,11 +15,11 @@ void ACS37800Component::setup() {
     this->mark_failed();
     return;
   }
-  if (this->setBypassNenable(true, false) != 0) {  // Set the Bypass_N_Enable flag to true, but don't write to EEPROM
+  if (this->setBypassNenable(true, true) != 0) {  // Set the Bypass_N_Enable flag to true, but don't write to EEPROM
     this->mark_failed();
     return;
   }
-  if (this->setNumberOfSamples(number_of_samples_, false)) {  // Set the number of samples, but don't write to EEPROM
+  if (this->setNumberOfSamples(number_of_samples_, true)) {  // Set the number of samples, but don't write to EEPROM
     this->mark_failed();
     return;
   }
