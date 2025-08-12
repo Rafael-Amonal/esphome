@@ -36,8 +36,8 @@ void ACS37800Component::dump_config() {
   LOG_UPDATE_INTERVAL(this);
 
   ESP_LOGCONFIG(TAG,
-                "  Sense resistor for voltage measurement in Ohms: %d\n"
-                "  Divider resistance for voltage measurement in Ohms: %d\n"
+                "  Sense resistor for voltage measurement in Ohms: %f\n"
+                "  Divider resistance for voltage measurement in Ohms: %f\n"
                 "  Number of samples for RMS calculations: %d",
                 shunt_resistance_ohm_, divider_resistance_ohm_, number_of_samples_);
 
